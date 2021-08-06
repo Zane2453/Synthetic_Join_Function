@@ -1,4 +1,4 @@
-def incr_mean_variance_axis0(X, last_mean, last_var, last_n, weights=None):
+def run(X, last_mean, last_var, last_n, weights=None, min_value=0):
     if X.dtype not in [np.float32, np.float64]:
         X = X.astype(np.float64)
     X_dtype = X.dtype
@@ -8,7 +8,16 @@ def incr_mean_variance_axis0(X, last_mean, last_var, last_n, weights=None):
         weights = weights.astype(np.float64, copy=False)
     if last_n.dtype not in [np.float32, np.float64]:
         last_n = last_n.astype(np.float64, copy=False)
-    
+
+    min_ = X.min()
+    if min_ < min_value:
+        if sparse.issparse(X):
+            raise ValueError("Cannot make the data matrix"
+                             " nonnegative because it is sparse."
+                             " Adding a value to every entry would"
+                             " make it no longer sparse.")
+        X = X + (min_value - min_)
+
     return (X.data,
             np.sum(weights),
             X.shape[1],
